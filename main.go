@@ -1,45 +1,58 @@
 package main
 
 import (
-	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 )
 
-func main() {
-
-	// declare user input variable
-	var task string
-	var taskList []string
-
-	// prompt user for input
-	fmt.Println("Enter a task:")
-
-	// capture user task
-	input := bufio.NewReader(os.Stdin)
-	task, err := input.ReadString('\n')
-
-	// trim the endline '\n' character
-	task = task[:len(task)-1]
-	if err != nil {
-		fmt.Println(err)
-	} else if len(task) == 0 {
-		fmt.Println("You forgot to write a task!")
-	}
-
-	if len(task) > 0 {
-		// add to list of tasks
-		taskList = append(taskList, task)
-		// print the task to console
-		fmt.Println("Your task: ", task)
-	}
-
-	if len(taskList) > 0 {
-		fmt.Println(taskList)
-	} else {
-		fmt.Println("You don't have any tasks!")
-	}
-
+// Tasks struct which contains an array of tasks
+type Tasks struct {
+	Tasks []Task `json:"Tasks"`
 }
 
-// flags package for reading off the command line
+// Task struct which contains a status and an item.
+type Task struct {
+	Id     string `json:"id"`
+	Status string `json:"status"`
+	Item   string `json:"item"`
+}
+
+func check(e error) {
+	if e != nil {
+		fmt.Println(e)
+	}
+}
+
+func main() {
+
+	// TODO
+	
+	// read file test.txt
+	f, err := os.Open("tasks.json")
+	check(err)
+
+	byteArray, err := io.ReadAll(f)
+	check(err)
+
+	// initialise tasks variable
+	var tasks Tasks
+
+	// unmarhsal byte array
+	json.Unmarshal(byteArray, &tasks)
+
+	// iterate through the tasks and print
+	for i := 0; i < len(tasks.Tasks); i++ {
+		fmt.Println("Task id: " + tasks.Tasks[i].Id)
+		fmt.Println("Task status: " + tasks.Tasks[i].Status)
+		fmt.Println("Task item: " + tasks.Tasks[i].Item)
+	}
+
+	f.Close()
+
+
+	
+	// use JSON filetype
+
+}

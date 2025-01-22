@@ -1,0 +1,14 @@
+{
+  "tasks": [
+    {
+      "id": "01",
+      "status": "complete",
+      "item": "write a go app!"
+    },
+    {
+      "id": "02",
+      "status": "started",
+      "item": "write a better go app!!"
+    }
+  ]
+}
