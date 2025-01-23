@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 )
 
@@ -20,9 +21,10 @@ type Task struct {
 	Item   string `json:"item"`
 }
 
-func check(e error) {
+func check(logger *slog.Logger, e error) {
 	if e != nil {
 		fmt.Println(e)
+		logger.Error("Encountered an Error", "error", e)
 	}
 }
 
@@ -37,13 +39,16 @@ func printTasks(tasks Tasks) {
 
 func TodoCli() {
 
+	// initialise logger
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 	// read file test.txt
 	f, err := os.Open("tasks.json")
-	check(err)
+	check(logger, err)
 	defer f.Close()
 
 	byteArray, err := io.ReadAll(f)
-	check(err)
+	check(logger, err)
 
 	// initialise tasks variable
 	var tasks Tasks
@@ -98,7 +103,10 @@ func TodoCli() {
 
 	// save the new tasks list to a json file
 	jsonBytes, err := json.Marshal(tasks)
-	check(err)
+	check(logger, err)
 
 	err = os.WriteFile("tasks.json", jsonBytes, 0644)
+	if err == nil {
+		logger.Info("Saved tasks to file: 'tasks.json'")
+	}
 }
