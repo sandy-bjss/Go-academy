@@ -1,14 +1,1 @@
-{
-  "tasks": [
-    {
-      "id": "01",
-      "status": "complete",
-      "item": "write a go app!"
-    },
-    {
-      "id": "02",
-      "status": "started",
-      "item": "write a better go app!!"
-    }
-  ]
-}
+{"Tasks":[{"id":"01","status":"complete","item":"write a go app!"},{"id":"02","status":"started","item":"write a better go app!!"},{"id":"003","status":"started","item":"pass in command line flags to my app"}]}
