@@ -21,13 +21,6 @@ type Task struct {
 	Item   string `json:"item"`
 }
 
-func check(logger *slog.Logger, e error) {
-	if e != nil {
-		fmt.Println(e)
-		logger.Error("Encountered an Error", "error", e)
-	}
-}
-
 func printTasks(tasks Tasks) {
 	// iterate through the tasks and print
 	for i := 0; i < len(tasks.Tasks); i++ {
@@ -44,11 +37,17 @@ func TodoCli() {
 
 	// read file test.txt
 	f, err := os.Open("tasks.json")
-	check(logger, err)
+	if err != nil {
+		fmt.Println(err)
+		logger.Error("Encountered an Error", "error", err)
+	}
 	defer f.Close()
 
 	byteArray, err := io.ReadAll(f)
-	check(logger, err)
+	if err != nil {
+		fmt.Println(err)
+		logger.Error("Encountered an Error", "error", err)
+	}
 
 	// initialise tasks variable
 	var tasks Tasks
@@ -103,7 +102,10 @@ func TodoCli() {
 
 	// save the new tasks list to a json file
 	jsonBytes, err := json.Marshal(tasks)
-	check(logger, err)
+	if err != nil {
+		fmt.Println(err)
+		logger.Error("Encountered an Error", "error", err)
+	}
 
 	err = os.WriteFile("tasks.json", jsonBytes, 0644)
 	if err == nil {
