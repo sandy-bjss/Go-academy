@@ -22,5 +22,5 @@ func main() {
 
 	// capture signal
 	sig := <-sigs
-	fmt.Println("Keyboard interupt: " + sig.String() + "\nClosing todo app")
+	fmt.Println("\nKeyboard interupt: " + sig.String() + "\nClosing todo app")
 }
