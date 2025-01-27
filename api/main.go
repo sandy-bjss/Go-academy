@@ -7,9 +7,11 @@ import (
 
 type InMemoryTodoStore struct{}
 
-func (i *InMemoryTodoStore) GetTodos(todoId string) string {
+func (i *InMemoryTodoStore) GetTodo(todoId string) string {
 	return "01"
 }
+
+func (i *InMemoryTodoStore) CreateTodo(todoId string) {}
 
 func main() {
 	server := &TodoServer{&InMemoryTodoStore{}}
