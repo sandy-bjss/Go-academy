@@ -2,6 +2,7 @@ package todo
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -19,6 +20,35 @@ type Task struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`
 	Item   string `json:"item"`
+}
+
+// Add task method
+func (ts *Tasks) AddTask(addTask Task) {
+	ts.Tasks = append(ts.Tasks, addTask)
+}
+
+// Update task method
+func (ts *Tasks) UpdateTask(updateTask Task) error {
+	for idx, t := range ts.Tasks {
+		if t.Id == updateTask.Id {
+			// need to access the task via task[idx] to modify value in memory
+			ts.Tasks[idx].Status = updateTask.Status
+			ts.Tasks[idx].Item = updateTask.Item
+			return nil
+		}
+	}
+	return errors.New("uh oh: task not found")
+}
+
+// Delete task method
+func (ts *Tasks) DeleteTask(deleteTask Task) error {
+	for idx, t := range ts.Tasks {
+		if t.Id == deleteTask.Id {
+			ts.Tasks = append(ts.Tasks[:idx], ts.Tasks[idx+1:]...)
+			return nil
+		}
+	}
+	return errors.New("Uh oh: did not find task, so could perform delete")
 }
 
 func printTasks(tasks Tasks) {
@@ -63,36 +93,21 @@ func TodoCli() {
 	itemPtr := flag.String("item", "foobar", "task item")
 	flag.Parse()
 
+	// create task item from flags
+	var newTask Task
+	// set task values
+	newTask.Id = *idPtr
+	newTask.Status = *statusPtr
+	newTask.Item = *itemPtr
+
 	// check what to do with the supplied item
 	switch *actionPtr {
 	case "a":
-		// create task item from flags
-		var newTask Task
-		// set task values
-		newTask.Id = *idPtr
-		newTask.Status = *statusPtr
-		newTask.Item = *itemPtr
-		// add this task to tasks array
-		tasks.Tasks = append(tasks.Tasks, newTask)
+		tasks.AddTask(newTask)
 	case "u":
-		fmt.Println("inside update tasks")
-		// loop through tasks
-		for idx, t := range tasks.Tasks {
-			if t.Id == *idPtr {
-				// need to access the task via task[idx] to modify value in memory
-				tasks.Tasks[idx].Status = *statusPtr
-				tasks.Tasks[idx].Item = *itemPtr
-				break
-			}
-		}
+		tasks.UpdateTask(newTask)
 	case "d":
-		fmt.Println("inside delete tasks")
-		// loop through tasks
-		for idx, t := range tasks.Tasks {
-			if t.Id == *idPtr {
-				tasks.Tasks = append(tasks.Tasks[:idx], tasks.Tasks[idx+1:]...)
-			}
-		}
+		tasks.DeleteTask(newTask)
 	default:
 		break
 	}
