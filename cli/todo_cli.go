@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -8,6 +9,8 @@ import (
 	"io"
 	"log/slog"
 	"os"
+
+	"github.com/google/uuid"
 )
 
 // Tasks struct which contains an array of tasks
@@ -49,6 +52,25 @@ func (ts *Tasks) DeleteTask(deleteTask Task) error {
 		}
 	}
 	return errors.New("Uh oh: did not find task, so could perform delete")
+
+// const for traceID key of TraceIDType
+const TraceIDString = TraceIDType("traceID")
+
+type TraceIDType string
+
+type customHandler struct {
+	slog.Handler
+}
+
+func (h *customHandler) Handle(ctx context.Context, r slog.Record) error {
+	if traceID, ok := ctx.Value(TraceIDString).(string); ok {
+		r.AddAttrs(slog.String(string(TraceIDString), traceID))
+	}
+	if traceID, ok := ctx.Value(TraceIDString).(uuid.UUID); ok {
+		r.AddAttrs(slog.String(string(TraceIDString), traceID.String()))
+	}
+	return h.Handler.Handle(ctx, r)
+
 }
 
 func printTasks(tasks Tasks) {
@@ -62,21 +84,31 @@ func printTasks(tasks Tasks) {
 
 func TodoCli() {
 
+	// initialise context
+	ctx, ctxDone := context.WithCancel(context.Background())
+	ctx = context.WithValue(ctx, TraceIDString, uuid.New())
+	defer ctxDone()
+
 	// initialise logger
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	baseHandler := slog.NewJSONHandler(os.Stdout, nil) // &slog.HandlerOptions{AddSource: true}
+	handler := &customHandler{Handler: baseHandler}
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
+	slog.InfoContext(ctx, "starting")
 
 	// read file test.txt
 	f, err := os.Open("tasks.json")
 	if err != nil {
 		fmt.Println(err)
-		logger.Error("Encountered an Error", "error", err)
+		logger.ErrorContext(ctx, "Encountered an Error", "error", err)
 	}
 	defer f.Close()
 
 	byteArray, err := io.ReadAll(f)
 	if err != nil {
 		fmt.Println(err)
-		logger.Error("Encountered an Error", "error", err)
+		logger.ErrorContext(ctx, "Encountered an Error", "error", err)
 	}
 
 	// initialise tasks variable
@@ -119,11 +151,11 @@ func TodoCli() {
 	jsonBytes, err := json.Marshal(tasks)
 	if err != nil {
 		fmt.Println(err)
-		logger.Error("Encountered an Error", "error", err)
+		logger.ErrorContext(ctx, "Encountered an Error", "error", err)
 	}
 
 	err = os.WriteFile("tasks.json", jsonBytes, 0644)
 	if err == nil {
-		logger.Info("Saved tasks to file: 'tasks.json'")
+		slog.InfoContext(ctx, "Saved tasks to file 'tasks.json'")
 	}
 }
