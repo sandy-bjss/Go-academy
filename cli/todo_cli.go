@@ -52,6 +52,7 @@ func (ts *Tasks) DeleteTask(deleteTask Task) error {
 		}
 	}
 	return errors.New("Uh oh: did not find task, so could perform delete")
+}
 
 // const for traceID key of TraceIDType
 const TraceIDString = TraceIDType("traceID")
