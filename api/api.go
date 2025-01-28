@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 )
 
 const PORT = ":8080"
@@ -18,10 +19,10 @@ func Api() {
 	mux := http.NewServeMux()
 
 	// define handlers for routing
-	mux.HandleFunc("/create", testHandler)
-	mux.HandleFunc("/get", testHandler)
-	mux.HandleFunc("/update", testHandler)
-	mux.HandleFunc("/delete", testHandler)
+	mux.HandleFunc("/create", genericHandler)
+	mux.HandleFunc("/get", genericHandler)
+	mux.HandleFunc("/update", genericHandler)
+	mux.HandleFunc("/delete", genericHandler)
 
 	// start server
 	if err := http.ListenAndServe(PORT, mux); err != nil {
@@ -31,6 +32,8 @@ func Api() {
 	slog.Info("Server Started, listening...", "PORT", PORT)
 }
 
-func testHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "test endpoint")
+func genericHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	endpoint := strings.TrimPrefix(r.URL.Path, "")
+	fmt.Fprintf(w, "Api endpoint %s", endpoint)
 }
