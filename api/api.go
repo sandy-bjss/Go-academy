@@ -11,8 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-const PORT = ":8080"
-
 // const for traceID key of TraceIDType
 const TraceIDString = TraceIDType("traceID")
 
@@ -35,7 +33,7 @@ func Api() {
 
 	// start server
 	if err := http.ListenAndServe(PORT, mux); err != nil {
-		logger.Error("Server couldn't start")
+		logger.Error("API Server couldn't start")
 		return
 	}
 	slog.Info("Server Started, listening...", "PORT", PORT)

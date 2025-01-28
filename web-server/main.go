@@ -16,7 +16,7 @@ func main() {
 	fmt.Println("Starting server...\nCTRL-C to shutdown")
 
 	// start api
-	go Api()
+	go FileServer()
 
 	// capture signal
 	<-sigs
