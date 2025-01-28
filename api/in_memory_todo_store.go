@@ -1,17 +1,23 @@
 package main
 
+import "fmt"
+
 func NewInMemoryTodoStore() *InMemoryTodoStore {
 	return &InMemoryTodoStore{map[string]string{}}
 }
 
 type InMemoryTodoStore struct {
-	store map[string]string
+	todos map[string]string
 }
 
 func (i *InMemoryTodoStore) CreateTodo(todoId string) {
-	i.store[todoId] = "item"
+	i.todos[todoId] = "item"
 }
 
 func (i *InMemoryTodoStore) GetTodo(todoId string) string {
-	return i.store[todoId]
+	if todoId == "" {
+		todoIds := fmt.Sprint(i.todos)
+		return todoIds
+	}
+	return i.todos[todoId]
 }
