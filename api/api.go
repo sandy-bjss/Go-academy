@@ -58,13 +58,14 @@ func middlewareTwo(next http.Handler) http.Handler {
 func middlewareTraceID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("middlewareTRaceID: adding context traceID")
-		r.WithContext(context.WithValue(r.Context(), TraceIDString, uuid.New()))
-		next.ServeHTTP(w, r)
+
+		ctx := context.WithValue(r.Context(), string(TraceIDString), uuid.New())
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func genericHandler(w http.ResponseWriter, r *http.Request) {
-	slog.Info("executing generic handler", string(TraceIDString), r.Context())
+	slog.Info("executing generic handler", string(TraceIDString), r.Context().Value(string(TraceIDString)))
 	w.Header().Set("Content-Type", "application/json")
 	endpoint := strings.TrimPrefix(r.URL.Path, "")
 	fmt.Fprintf(w, "Api endpoint: %s\nEndpoint type: %v", endpoint, w.Header().Get("Content-Type"))
