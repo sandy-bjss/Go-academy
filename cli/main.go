@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-
-	todo "sandy.goacademy/todo/cli"
 )
 
 func main() {
@@ -17,7 +15,7 @@ func main() {
 	signal.Notify(sigs, os.Interrupt)
 
 	// run cli
-	todo.TodoCli()
+	TodoCli()
 	fmt.Println("==================\ncli running: CTRL-C to exit")
 
 	// capture signal

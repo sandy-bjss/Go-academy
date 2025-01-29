@@ -1,4 +1,4 @@
-module sandy.goacademy/todo
+module example.com/api
 
 go 1.23.5
 
