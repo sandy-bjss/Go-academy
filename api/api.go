@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/google/uuid"
 )
@@ -16,12 +15,15 @@ import (
 // const for traceID key of TraceIDType
 const TraceIDString = TraceIDType("traceID")
 
-// in memory todos
-var todos = map[string]string{
-	"started":   "item 1",
-	"completed": "item 2",
-	"pending":   "item 3",
+// Task struct which contains a status and an item.
+type Task struct {
+	Id     string `json:"id"`
+	Status string `json:"status"`
+	Item   string `json:"item"`
 }
+
+var tasks []Task
+var tasksData = "tasks.json"
 
 type TraceIDType string
 
@@ -33,8 +35,6 @@ func Api() {
 	mux := http.NewServeMux()
 
 	// define handlers for routing
-	gh := http.HandlerFunc(genericHandler)
-	mux.Handle("/", middlewareOne(middlewareTwo(middlewareTraceID(gh))))
 	mux.Handle("POST /create", middlewareTraceID(http.HandlerFunc(createHandler)))
 	mux.Handle("GET /get", middlewareTraceID(http.HandlerFunc(getHandler)))
 	mux.Handle("POST /update", middlewareTraceID(http.HandlerFunc(updateHandler)))
@@ -48,20 +48,6 @@ func Api() {
 	slog.Info("Server Started, listening...", "PORT", PORT)
 }
 
-func middlewareOne(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		slog.Info("executing middleware 1")
-		next.ServeHTTP(w, r)
-	})
-}
-
-func middlewareTwo(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		slog.Info("executing middleware 2")
-		next.ServeHTTP(w, r)
-	})
-}
-
 func middlewareTraceID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("middlewareTRaceID: adding context traceID")
@@ -71,74 +57,110 @@ func middlewareTraceID(next http.Handler) http.Handler {
 	})
 }
 
-func genericHandler(w http.ResponseWriter, r *http.Request) {
-	slog.Info("executing generic handler", string(TraceIDString), r.Context().Value(string(TraceIDString)))
-	w.Header().Set("Content-Type", "application/json")
-	endpoint := strings.TrimPrefix(r.URL.Path, "")
-	fmt.Fprintf(w, "Api endpoint: %s\nEndpoint type: %v", endpoint, w.Header().Get("Content-Type"))
+func loadTasks() {
+	file, err := os.Open(tasksData)
+	if err != nil {
+		slog.Info("no json file with todos exists, a blank Todo slice has been initialised")
+		tasks = []Task{}
+	}
+	defer file.Close()
+
+	byteArray, err := io.ReadAll(file)
+	if err != nil {
+		fmt.Println(err)
+		slog.Error("Could not read file data, a blank Todo slice has been initialised")
+		tasks = []Task{}
+	}
+
+	json.Unmarshal(byteArray, &tasks)
+}
+
+func saveTasks() {
+	jsonBytes, err := json.Marshal(tasks)
+	if err != nil {
+		slog.Error("Could not save tasks")
+	}
+
+	os.WriteFile("tasks.json", jsonBytes, 0644)
 }
 
 func getHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("executing GET handler", string(TraceIDString), r.Context().Value(string(TraceIDString)))
 
-	jsonData, err := json.Marshal(todos)
-	if err != nil {
-		slog.Error("error loading todas", string(TraceIDString), r.Context().Value(string(TraceIDString)))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	loadTasks()
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonData)
+	json.NewEncoder(w).Encode(tasks)
 }
 
 func createHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("executing CREATE handler", string(TraceIDString), r.Context().Value(string(TraceIDString)))
 
-	reqBody, err := io.ReadAll(r.Body)
-	if err != nil {
-		fmt.Printf("server: could not read request body: %s\n", err)
+	var newTask Task
+	if err := json.NewDecoder(r.Body).Decode(&newTask); err != nil {
+		fmt.Printf("server: invlaid JSON: %s\n", err)
+		slog.Error("Invlaid JSON, could not create new task")
 		return
 	}
-	fmt.Printf("server: request body: %s\n", reqBody)
 
-	todos["test"] = string(reqBody)
+	loadTasks()
+	tasks = append(tasks, newTask)
+	saveTasks()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(todos)
+	json.NewEncoder(w).Encode(tasks)
 }
 
 func updateHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("executing UPDATE handler", string(TraceIDString), r.Context().Value(string(TraceIDString)))
 
-	todoID := r.Header.Get("id") //"pending"
-	slog.Info(todoID)
-
-	for k := range todos {
-		if k == todoID {
-			todos[k] = "updated to new item"
-		}
+	var updatedTask Task
+	if err := json.NewDecoder(r.Body).Decode(&updatedTask); err != nil {
+		fmt.Printf("server: invlaid JSON: %s\n", err)
+		slog.Error("Invlaid JSON, could not create new task")
+		return
+	}
+	if updatedTask.Id == "" {
+		slog.Error("No task ID supplied, can't update task list")
+		return
 	}
 
+	loadTasks()
+	for i, t := range tasks {
+		if t.Id == updatedTask.Id {
+			tasks[i].Status = updatedTask.Status
+			tasks[i].Item = updatedTask.Item
+			break
+		}
+	}
+	saveTasks()
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(todos)
+	json.NewEncoder(w).Encode(tasks)
 }
 
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("executing DELETE handler", string(TraceIDString), r.Context().Value(string(TraceIDString)))
 
-	taskToDelete := r.URL.Query().Get("id")
-	if taskToDelete == "" {
+	taskIdToDelete := r.URL.Query().Get("id")
+	if taskIdToDelete == "" {
 		slog.Error("No Task ID supplied, nothing deleted.")
 	}
 
-	_, ok := todos[taskToDelete]
-	if ok {
-		delete(todos, taskToDelete)
-	} else {
-		slog.Error("No such task found in list of todos.")
+	loadTasks()
+
+	for i, t := range tasks {
+		if t.Id == taskIdToDelete {
+			tasks = append(tasks[:i], tasks[i+1:]...)
+			break
+		}
+		if i == len(tasks) {
+			slog.Error("Could not find task to delete")
+		}
 	}
 
+	saveTasks()
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(todos)
+	json.NewEncoder(w).Encode(tasks)
 }
