@@ -98,7 +98,7 @@ func TodoCli() {
 
 	slog.InfoContext(ctx, "starting")
 
-	// read file test.txt
+	// read todo JSON data
 	f, err := os.Open("tasks.json")
 	if err != nil {
 		fmt.Println(err)
