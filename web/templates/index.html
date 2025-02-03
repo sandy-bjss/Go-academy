@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{.PageTitle}}</title>
+  </head>
+  <body>
+    <h1>{{.PageTitle}}</h1>
+    <p>
+      This is a dynamic html file served using a web server written in Go :)
+    </p>
+    <ul>
+      {{range .Todos}}
+      <li>Completed: {{.Status}} >> Item: {{.Item}}</li>
+      {{end}}
+    </ul>
+  </body>
+</html>
