@@ -15,13 +15,13 @@ type Task struct {
 	Item   string `json:"item"`
 }
 
-var tasks []Task
+var taskList []Task
 
-func LoadTasks(taskJSONFile string) {
+func LoadTasks(taskJSONFile string) []Task {
 	file, err := os.Open(taskJSONFile)
 	if err != nil {
 		slog.Info("no json file with todos exists, a blank Todo slice has been initialised")
-		tasks = []Task{}
+		taskList = []Task{}
 	}
 	defer file.Close()
 
@@ -29,19 +29,21 @@ func LoadTasks(taskJSONFile string) {
 	if err != nil {
 		fmt.Println(err)
 		slog.Error("Could not read file data, a blank Todo slice has been initialised")
-		tasks = []Task{}
+		taskList = []Task{}
 	}
 
-	json.Unmarshal(byteArray, &tasks)
+	json.Unmarshal(byteArray, &taskList)
+
+	return taskList
 }
 
-func SaveTasks(tasks []Task) {
+func SaveTasks(tasks []Task, file string) {
 	jsonBytes, err := json.Marshal(tasks)
 	if err != nil {
 		slog.Error("Could not save tasks")
 	}
 
-	os.WriteFile("tasks.json", jsonBytes, 0644)
+	os.WriteFile(file, jsonBytes, 0644)
 }
 
 func AddTask(task Task, tasks []Task) {
