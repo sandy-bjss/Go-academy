@@ -17,7 +17,7 @@ type Task struct {
 
 var tasks []Task
 
-func loadTasks(taskJSONFile string) {
+func LoadTasks(taskJSONFile string) {
 	file, err := os.Open(taskJSONFile)
 	if err != nil {
 		slog.Info("no json file with todos exists, a blank Todo slice has been initialised")
@@ -35,7 +35,7 @@ func loadTasks(taskJSONFile string) {
 	json.Unmarshal(byteArray, &tasks)
 }
 
-func saveTasks(tasks []Task) {
+func SaveTasks(tasks []Task) {
 	jsonBytes, err := json.Marshal(tasks)
 	if err != nil {
 		slog.Error("Could not save tasks")
@@ -44,11 +44,11 @@ func saveTasks(tasks []Task) {
 	os.WriteFile("tasks.json", jsonBytes, 0644)
 }
 
-func addTask(task Task, tasks []Task) {
+func AddTask(task Task, tasks []Task) {
 	tasks = append(tasks, task)
 }
 
-func updateTask(taskToUpdate Task, tasks []Task) {
+func UpdateTask(taskToUpdate Task, tasks []Task) {
 	for i, t := range tasks {
 		if t.Id == taskToUpdate.Id {
 			tasks[i].Status = taskToUpdate.Status
@@ -58,7 +58,7 @@ func updateTask(taskToUpdate Task, tasks []Task) {
 	}
 }
 
-func deleteTask(taskIdToDelete string, tasks []Task) {
+func DeleteTask(taskIdToDelete string, tasks []Task) {
 	for i, t := range tasks {
 		if t.Id == taskIdToDelete {
 			tasks = append(tasks[:i], tasks[i+1:]...)
