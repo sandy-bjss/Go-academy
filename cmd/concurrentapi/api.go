@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"os/signal"
 
 	"github.com/google/uuid"
 	"sandy.goacademy/taskmaster/pkg/tasks"
@@ -16,25 +15,6 @@ import (
 const TASK_LIST_JSON_FILE = "../../tasks.json"
 const TraceIDString = TraceIDType("traceID")
 const PORT = ":8080"
-
-func main() {
-	var task = tasks.Task{Id: "00", Status: "Pending", Item: "First API task"}
-
-	fmt.Println(task)
-
-	// create a channel for waiting for signal from OS
-	sigs := make(chan os.Signal, 1)
-	// notify the channel of a signal from the OS
-	signal.Notify(sigs, os.Interrupt)
-	fmt.Println("Starting server...\nCTRL-C to shutdown")
-
-	// start api
-	go Api()
-
-	// capture signal
-	<-sigs
-	fmt.Println("\nKeyboard interupt...\nShutting down server")
-}
 
 type TraceIDType string
 
