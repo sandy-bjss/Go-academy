@@ -18,6 +18,10 @@ const PORT = ":8080"
 
 type TraceIDType string
 
+type reqMessage struct {
+	operation string
+}
+
 func Api() {
 	// basic logging
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
