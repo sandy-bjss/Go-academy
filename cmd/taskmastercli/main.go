@@ -118,11 +118,11 @@ func TodoCli() {
 	// check what to do with the supplied item
 	switch *actionPtr {
 	case "a":
-		tasks.AddTask(newTask, taskList)
+		taskList = tasks.AddTask(newTask, taskList)
 	case "u":
-		tasks.UpdateTask(newTask, taskList)
+		taskList = tasks.UpdateTask(newTask, taskList)
 	case "d":
-		tasks.DeleteTask(newTask.Id, taskList)
+		taskList = tasks.DeleteTask(newTask.Id, taskList)
 	default:
 		break
 	}

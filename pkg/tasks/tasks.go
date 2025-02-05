@@ -46,28 +46,30 @@ func SaveTasks(tasks []Task, file string) {
 	os.WriteFile(file, jsonBytes, 0644)
 }
 
-func AddTask(task Task, tasks []Task) {
-	tasks = append(tasks, task)
+func AddTask(task Task, taskList []Task) []Task {
+	return append(taskList, task)
 }
 
-func UpdateTask(taskToUpdate Task, tasks []Task) {
-	for i, t := range tasks {
+func UpdateTask(taskToUpdate Task, taskList []Task) []Task {
+	for i, t := range taskList {
 		if t.Id == taskToUpdate.Id {
-			tasks[i].Status = taskToUpdate.Status
-			tasks[i].Item = taskToUpdate.Item
+			taskList[i].Status = taskToUpdate.Status
+			taskList[i].Item = taskToUpdate.Item
 			break
 		}
 	}
+	return taskList
 }
 
-func DeleteTask(taskIdToDelete string, tasks []Task) {
-	for i, t := range tasks {
+func DeleteTask(taskIdToDelete string, taskList []Task) []Task {
+	for i, t := range taskList {
 		if t.Id == taskIdToDelete {
-			tasks = append(tasks[:i], tasks[i+1:]...)
+			taskList = append(taskList[:i], taskList[i+1:]...)
 			break
 		}
-		if i == len(tasks) {
+		if i == len(taskList) {
 			slog.Error("Could not find task to delete")
 		}
 	}
+	return taskList
 }

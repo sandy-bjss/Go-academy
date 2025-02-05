@@ -88,7 +88,7 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
-	taskList = append(taskList, newTask)
+	taskList = tasks.AddTask(newTask, taskList)
 	tasks.SaveTasks(taskList, TASK_LIST_JSON_FILE)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -110,13 +110,7 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
-	for i, t := range taskList {
-		if t.Id == updatedTask.Id {
-			taskList[i].Status = updatedTask.Status
-			taskList[i].Item = updatedTask.Item
-			break
-		}
-	}
+	taskList = tasks.UpdateTask(updatedTask, taskList)
 	tasks.SaveTasks(taskList, TASK_LIST_JSON_FILE)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -132,17 +126,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
-
-	for i, t := range taskList {
-		if t.Id == taskIdToDelete {
-			taskList = append(taskList[:i], taskList[i+1:]...)
-			break
-		}
-		if i == len(taskList) {
-			slog.Error("Could not find task to delete")
-		}
-	}
-
+	taskList = tasks.DeleteTask(taskIdToDelete, taskList)
 	tasks.SaveTasks(taskList, TASK_LIST_JSON_FILE)
 
 	w.Header().Set("Content-Type", "application/json")
