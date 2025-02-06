@@ -32,7 +32,10 @@ func loadTasks(taskJSONfilestore string) []Task {
 		taskList = []Task{}
 	}
 
-	json.Unmarshal(byteArray, &taskList)
+	if err := json.Unmarshal(byteArray, &taskList); err != nil {
+		fmt.Println(err)
+		slog.Error("Could not unmarshal byteArray")
+	}
 
 	return taskList
 }
