@@ -35,6 +35,7 @@ func Api() {
 	mux.Handle("POST /update", middlewareTraceID(http.HandlerFunc(updateHandler)))
 	mux.Handle("DELETE /delete", middlewareTraceID(http.HandlerFunc(deleteHandler)))
 
+	// Start the actor and defer shutdown
 	tasks.Start(TASK_LIST_JSON_FILE)
 	defer tasks.Stop()
 
