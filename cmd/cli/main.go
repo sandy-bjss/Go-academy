@@ -78,26 +78,6 @@ func TodoCli() {
 
 	slog.InfoContext(ctx, "starting")
 
-	// read todo JSON data
-	// f, err := os.Open(TASK_LIST_JSON_FILE)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	logger.ErrorContext(ctx, "Encountered an Error", "error", err)
-	// }
-	// defer f.Close()
-
-	// byteArray, err := io.ReadAll(f)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	logger.ErrorContext(ctx, "Encountered an Error", "error", err)
-	// }
-
-	// initialise tasks variable
-	// var taskList []tasks.Task
-
-	// unmarhsal byte array
-	// json.Unmarshal(byteArray, &taskList)
-
 	// capture cli flags
 	// define flags, note: return pointers not values
 	actionPtr := flag.String("do", "", "specify what action to perform; 'a' to add, 'u' to update or 'd' to delete")
@@ -127,16 +107,4 @@ func TodoCli() {
 
 	// print the tasks
 	printTasks(tasks.GetTasks(TASK_LIST_JSON_FILE))
-
-	// save the new tasks list to a json file
-	// jsonBytes, err := json.Marshal(taskList)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	logger.ErrorContext(ctx, "Encountered an Error", "error", err)
-	// }
-
-	// err = os.WriteFile(TASK_LIST_JSON_FILE, jsonBytes, 0644)
-	// if err == nil {
-	// 	slog.InfoContext(ctx, "Saved tasks to file 'tasks.json'")
-	// }
 }
