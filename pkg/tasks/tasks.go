@@ -17,7 +17,7 @@ type Task struct {
 
 var taskList []Task
 
-func LoadTasks(taskJSONfilestore string) []Task {
+func loadTasks(taskJSONfilestore string) []Task {
 	file, err := os.Open(taskJSONfilestore)
 	if err != nil {
 		slog.Info("no json file with todos exists, a blank Todo slice has been initialised")
@@ -37,7 +37,7 @@ func LoadTasks(taskJSONfilestore string) []Task {
 	return taskList
 }
 
-func SaveTasks(tasks []Task, taskJSONfilestore string) {
+func saveTasks(tasks []Task, taskJSONfilestore string) {
 	jsonBytes, err := json.Marshal(tasks)
 	if err != nil {
 		slog.Error("Could not save tasks")
@@ -47,18 +47,18 @@ func SaveTasks(tasks []Task, taskJSONfilestore string) {
 }
 
 func GetTasks(taskJSONfilestore string) []Task {
-	return LoadTasks(taskJSONfilestore)
+	return loadTasks(taskJSONfilestore)
 }
 
 func CreateTask(task Task, taskJSONfilestore string) []Task {
-	taskList := LoadTasks(taskJSONfilestore)
+	taskList := loadTasks(taskJSONfilestore)
 	taskList = append(taskList, task)
-	SaveTasks(taskList, taskJSONfilestore)
+	saveTasks(taskList, taskJSONfilestore)
 	return taskList
 }
 
 func UpdateTask(taskToUpdate Task, taskJSONfilestore string) []Task {
-	taskList := LoadTasks(taskJSONfilestore)
+	taskList := loadTasks(taskJSONfilestore)
 	for i, t := range taskList {
 		if t.Id == taskToUpdate.Id {
 			taskList[i].Status = taskToUpdate.Status
@@ -66,12 +66,12 @@ func UpdateTask(taskToUpdate Task, taskJSONfilestore string) []Task {
 			break
 		}
 	}
-	SaveTasks(taskList, taskJSONfilestore)
+	saveTasks(taskList, taskJSONfilestore)
 	return taskList
 }
 
 func DeleteTask(taskIdToDelete string, taskJSONfilestore string) []Task {
-	taskList := LoadTasks(taskJSONfilestore)
+	taskList := loadTasks(taskJSONfilestore)
 	for i, t := range taskList {
 		if t.Id == taskIdToDelete {
 			taskList = append(taskList[:i], taskList[i+1:]...)
@@ -81,6 +81,6 @@ func DeleteTask(taskIdToDelete string, taskJSONfilestore string) []Task {
 			slog.Error("Could not find task to delete")
 		}
 	}
-	SaveTasks(taskList, taskJSONfilestore)
+	saveTasks(taskList, taskJSONfilestore)
 	return taskList
 }

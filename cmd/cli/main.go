@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -81,24 +79,24 @@ func TodoCli() {
 	slog.InfoContext(ctx, "starting")
 
 	// read todo JSON data
-	f, err := os.Open(TASK_LIST_JSON_FILE)
-	if err != nil {
-		fmt.Println(err)
-		logger.ErrorContext(ctx, "Encountered an Error", "error", err)
-	}
-	defer f.Close()
+	// f, err := os.Open(TASK_LIST_JSON_FILE)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	logger.ErrorContext(ctx, "Encountered an Error", "error", err)
+	// }
+	// defer f.Close()
 
-	byteArray, err := io.ReadAll(f)
-	if err != nil {
-		fmt.Println(err)
-		logger.ErrorContext(ctx, "Encountered an Error", "error", err)
-	}
+	// byteArray, err := io.ReadAll(f)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	logger.ErrorContext(ctx, "Encountered an Error", "error", err)
+	// }
 
 	// initialise tasks variable
-	var taskList []tasks.Task
+	// var taskList []tasks.Task
 
 	// unmarhsal byte array
-	json.Unmarshal(byteArray, &taskList)
+	// json.Unmarshal(byteArray, &taskList)
 
 	// capture cli flags
 	// define flags, note: return pointers not values
@@ -118,27 +116,27 @@ func TodoCli() {
 	// check what to do with the supplied item
 	switch *actionPtr {
 	case "a":
-		taskList = tasks.AddTask(newTask, taskList)
+		tasks.CreateTask(newTask, TASK_LIST_JSON_FILE)
 	case "u":
-		taskList = tasks.UpdateTask(newTask, taskList)
+		tasks.UpdateTask(newTask, TASK_LIST_JSON_FILE)
 	case "d":
-		taskList = tasks.DeleteTask(newTask.Id, taskList)
+		tasks.DeleteTask(newTask.Id, TASK_LIST_JSON_FILE)
 	default:
 		break
 	}
 
 	// print the tasks
-	printTasks(taskList)
+	printTasks(tasks.GetTasks(TASK_LIST_JSON_FILE))
 
 	// save the new tasks list to a json file
-	jsonBytes, err := json.Marshal(taskList)
-	if err != nil {
-		fmt.Println(err)
-		logger.ErrorContext(ctx, "Encountered an Error", "error", err)
-	}
+	// jsonBytes, err := json.Marshal(taskList)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	logger.ErrorContext(ctx, "Encountered an Error", "error", err)
+	// }
 
-	err = os.WriteFile(TASK_LIST_JSON_FILE, jsonBytes, 0644)
-	if err == nil {
-		slog.InfoContext(ctx, "Saved tasks to file 'tasks.json'")
-	}
+	// err = os.WriteFile(TASK_LIST_JSON_FILE, jsonBytes, 0644)
+	// if err == nil {
+	// 	slog.InfoContext(ctx, "Saved tasks to file 'tasks.json'")
+	// }
 }

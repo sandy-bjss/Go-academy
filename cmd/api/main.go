@@ -52,7 +52,6 @@ func Api() {
 		logger.Error("API Server couldn't start")
 		return
 	}
-	slog.Info("Server Started, listening...", "PORT", PORT)
 }
 
 func middlewareTraceID(next http.Handler) http.Handler {
@@ -67,7 +66,7 @@ func middlewareTraceID(next http.Handler) http.Handler {
 func getHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("executing GET handler", string(TraceIDString), r.Context().Value(string(TraceIDString)))
 
-	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
+	taskList := tasks.GetTasks(TASK_LIST_JSON_FILE)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(taskList)
@@ -83,9 +82,7 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
-	taskList = tasks.AddTask(newTask, taskList)
-	tasks.SaveTasks(taskList, TASK_LIST_JSON_FILE)
+	taskList := tasks.CreateTask(newTask, TASK_LIST_JSON_FILE)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(taskList)
@@ -105,9 +102,7 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
-	taskList = tasks.UpdateTask(updatedTask, taskList)
-	tasks.SaveTasks(taskList, TASK_LIST_JSON_FILE)
+	taskList := tasks.UpdateTask(updatedTask, TASK_LIST_JSON_FILE)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(taskList)
@@ -121,9 +116,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		slog.Error("No Task ID supplied, nothing deleted.")
 	}
 
-	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
-	taskList = tasks.DeleteTask(taskIdToDelete, taskList)
-	tasks.SaveTasks(taskList, TASK_LIST_JSON_FILE)
+	taskList := tasks.DeleteTask(taskIdToDelete, TASK_LIST_JSON_FILE)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(taskList)
