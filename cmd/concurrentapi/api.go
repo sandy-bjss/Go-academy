@@ -35,12 +35,14 @@ func Api() {
 	mux.Handle("POST /update", middlewareTraceID(http.HandlerFunc(updateHandler)))
 	mux.Handle("DELETE /delete", middlewareTraceID(http.HandlerFunc(deleteHandler)))
 
+	tasks.Start(TASK_LIST_JSON_FILE)
+	defer tasks.Stop()
+
 	// start server
 	if err := http.ListenAndServe(PORT, mux); err != nil {
 		logger.Error("API Server couldn't start")
 		return
 	}
-	slog.Info("Server Started, listening...", "PORT", PORT)
 }
 
 func middlewareTraceID(next http.Handler) http.Handler {
@@ -55,10 +57,10 @@ func middlewareTraceID(next http.Handler) http.Handler {
 func getHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("executing GET handler", string(TraceIDString), r.Context().Value(string(TraceIDString)))
 
-	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
+	response := tasks.Get()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(taskList)
+	json.NewEncoder(w).Encode(response)
 }
 
 func createHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,12 +73,10 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
-	taskList = tasks.AddTask(newTask, taskList)
-	tasks.SaveTasks(taskList, TASK_LIST_JSON_FILE)
+	response := tasks.Create(newTask)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(taskList)
+	json.NewEncoder(w).Encode(response)
 }
 
 func updateHandler(w http.ResponseWriter, r *http.Request) {
@@ -93,12 +93,10 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
-	taskList = tasks.UpdateTask(updatedTask, taskList)
-	tasks.SaveTasks(taskList, TASK_LIST_JSON_FILE)
+	response := tasks.Update(updatedTask)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(taskList)
+	json.NewEncoder(w).Encode(response)
 }
 
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -109,10 +107,8 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		slog.Error("No Task ID supplied, nothing deleted.")
 	}
 
-	taskList := tasks.LoadTasks(TASK_LIST_JSON_FILE)
-	taskList = tasks.DeleteTask(taskIdToDelete, taskList)
-	tasks.SaveTasks(taskList, TASK_LIST_JSON_FILE)
+	response := tasks.Delete(tasks.Task{Id: taskIdToDelete})
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(taskList)
+	json.NewEncoder(w).Encode(response)
 }
